@@ -1,3 +1,3 @@
-Cafe.db base de dados 
+Cafe.db  // base de dados 
 
-main3.py codigo
+explanada.py // codigo python + sql3 query
