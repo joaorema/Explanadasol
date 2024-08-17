@@ -25,14 +25,11 @@ def escolha_horario(value):
     update_label()
 
 def update_label():
-    resposta_label.configure(text=f"{selected_cidade}, {selected_explanada}, {selected_horario}")
-
-def pesquisar():
-    pass
+    resposta_label.configure(text=f"{selected_cidade} / {selected_explanada} / {selected_horario}")
 
 def clear():
         resposta_label.configure(text="") 
-        result_label.configure(text="")
+        result_textbox.delete("1.0", customtkinter.END)
 
 import sqlite3
 
@@ -53,45 +50,52 @@ def pesquisar():
     
     
     result_text = "\n".join([str(result) for result in results])
-    result_label.configure(text=result_text)
+    result_textbox.delete("1.0", customtkinter.END)  # Clear existing text
+    result_textbox.insert(customtkinter.END, result_text)
               
 root = customtkinter.CTk()
-root.geometry("800x500")
+root.geometry("900x600")
 root.title("Explanda ao sol")
 
+button_frame = customtkinter.CTkFrame(master=root, fg_color="transparent")
+button_frame.pack(side="top", pady=30)
+
+opcoes_label = customtkinter.CTkLabel(button_frame, text="Escolha as suas preferencias")
+opcoes_label.pack(side="top", pady=10)
 
 cidade = ["maia", "porto", "paredes"]
-my_combo1 = customtkinter.CTkComboBox(root, values=cidade, command=escolha_cidade)
-my_combo1.pack(pady=20)
+my_combo1 = customtkinter.CTkComboBox(button_frame, values=cidade, command=escolha_cidade)
+my_combo1.pack(side="left", padx=5)
 
 
 explanada = ["sol", "sombra"]
-my_combo2 = customtkinter.CTkComboBox(root, values=explanada, command=escolha_explanada)
-my_combo2.pack(pady=30)
+my_combo2 = customtkinter.CTkComboBox(button_frame, values=explanada, command=escolha_explanada)
+my_combo2.pack(side="left", padx=5)
 
 
 horario = ["manha", "tarde"]
-my_combo3 = customtkinter.CTkComboBox(root, values=horario, command=escolha_horario)
-my_combo3.pack(pady=40)
-
-button_pesquisar= customtkinter.CTkButton(master=root,
-        text="Pesquisar",
-        command=pesquisar,
-        height=50,
-        width=100,
-        font=("Helvetica", 24),
-        corner_radius=50,
-        state="normal")
-button_pesquisar.pack(pady=12, padx=10)
+my_combo3 = customtkinter.CTkComboBox(button_frame, values=horario, command=escolha_horario)
+my_combo3.pack(side="left", padx=5)
 
 resposta_label = customtkinter.CTkLabel(master=root, text="")
 resposta_label.pack(pady=14, padx=12)
 
-result_label = customtkinter.CTkLabel(master=root, text="")
-result_label.pack(pady=16, padx=14)
+result_textbox = customtkinter.CTkTextbox(master=root)
+result_textbox.pack(pady=16, padx=14)
 
-clearbtn = customtkinter.CTkButton(master=root, text="Clear", command=clear)
-clearbtn.pack(padx=18, pady=16)
+
+button_frame2 = customtkinter.CTkFrame(master=root, fg_color="transparent")
+button_frame2.pack(side="bottom", pady=30)
+
+button_pesquisar= customtkinter.CTkButton(button_frame2,
+        text="Pesquisar",
+        command=pesquisar,
+        state="normal")
+button_pesquisar.pack(side="top", pady=10)
+
+
+clearbtn = customtkinter.CTkButton(button_frame2, text="Limpar", command=clear)
+clearbtn.pack(side="bottom", pady=10)
 
 root.mainloop()
 
