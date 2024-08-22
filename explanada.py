@@ -8,6 +8,7 @@ customtkinter.set_default_color_theme("dark-blue")
 #Variaveis 
 selected_cidade = ""
 selected_horario = ""
+selected_rating = ""
 
 #Defeniçoes 
 
@@ -19,15 +20,27 @@ def escolha_cidade(value):
 
 def escolha_horario(value):
     global selected_horario
-    if value == "manha":
-         selected_horario = "manha"
+    if value == "Manha":
+         selected_horario = "Manha"
     else:
-         selected_horario = "tarde"
+         selected_horario = "Tarde"
     update_label()
 
-def update_label():
-    resposta_label.configure(text=f"{selected_cidade} / {selected_horario}")
+def escolha_rating(value):
+    global selected_rating
+    if value == "1-3":
+          selected_rating = "1.0-3.0"
+    else:
+          selected_rating = "4.0-5.0"
+    
+    update_label()
+        
 
+     
+def update_label():
+    display_rating = selected_rating.replace("1.0-3.0", "1-3").replace("4.0-5.0", "4-5")
+    resposta_label.configure(text=f"{selected_cidade} / {selected_horario} / {display_rating}")
+    
 def clear():
         resposta_label.configure(text="") 
         result_textbox.delete("1.0", customtkinter.END)
@@ -45,7 +58,7 @@ def open_info_window():
 
 
 def pesquisar():
-    conn = sqlite3.connect('/home/joao-rema/Documents/joao/explanadasol/explanada.db')
+    conn = sqlite3.connect('/home/joaorema/Documents/Explanadasol/explanada.db')
     cursor = conn.cursor()
     
     query = """
@@ -53,13 +66,21 @@ def pesquisar():
     FROM name 
     JOIN city ON name.id = city.idc 
     JOIN time ON name.id = time.idt 
+    JOIN rating ON name.id = rating.idr
     WHERE city.cidade = ? 
-    AND time.horario = ?
+    AND (time.horario = ? OR time.horario LIKE '%' || ? || '%')
+    AND rating.cotacao BETWEEN ? AND ?
     """
+
+    
     #para confirmar se esta a receber resultados
     print(f"Selected cidade: {selected_cidade}")
     print(f"Selected horario: {selected_horario}")
-    cursor.execute(query, (selected_cidade, selected_horario))
+    print(f"Selected rating: {selected_rating}")
+    lower_bound, upper_bound = selected_rating.split('-')
+    print(f"Lower bound: {lower_bound}, Upper bound: {upper_bound}")
+    cursor.execute(query, (selected_cidade, selected_horario, selected_horario, lower_bound, upper_bound))
+    
     
     results = cursor.fetchall()
     conn.close()
@@ -75,8 +96,8 @@ def pesquisar():
 root = customtkinter.CTk()
 root.geometry("900x600")
 root.title("Explanda ao sol")
-root.maxsize(900, 600)
-root.minsize(900, 600)
+root.maxsize(900, 650)
+root.minsize(900, 650)
 
 #frame de cima
 button_frame = customtkinter.CTkFrame(master=root, fg_color="transparent")
@@ -84,24 +105,39 @@ button_frame.pack(side="top", pady=30)
 
 #Titulo
 opcoes_label = customtkinter.CTkLabel(button_frame, text="Escolha as suas preferencias")
-opcoes_label.pack(side="top", pady=10)
+opcoes_label.grid(row=0, column=0, columnspan=3, pady=10)
+
+#subtitulo
+cidade_label = customtkinter.CTkLabel(button_frame, text = "Cidade")
+cidade_label.grid(row=1, column=0, padx=5)
+
+horario_label = customtkinter.CTkLabel(button_frame, text="Horario")
+horario_label.grid(row=1, column=1, padx=5)
+
+rating_label =customtkinter.CTkLabel(button_frame, text="Rating")
+rating_label.grid(row=1, column=2, padx=5)
 
 #Opcao 1
-cidade = ["Maia", "Porto", "Paredes"]
+cidade = ["Maia", "Porto", "Matosinhos", "Gaia", "Paredes", "Guimaraes"]
 my_combo1 = customtkinter.CTkComboBox(button_frame, values=cidade, command=escolha_cidade)
-my_combo1.pack(side="left", padx=5)
+my_combo1.grid(row=2, column=0, padx=5)
 
 #Opcao 2
-horario = ["manha", "tarde"]
+horario = ["Manha", "Tarde"]
 my_combo3 = customtkinter.CTkComboBox(button_frame, values=horario, command=escolha_horario)
-my_combo3.pack(side="left", padx=5)
+my_combo3.grid(row=2, column=1, padx=5)
+
+#Opcao 3
+rating = ["1-3", "4-5"]
+my_combo4 = customtkinter.CTkComboBox(button_frame, values=rating, command=escolha_rating)
+my_combo4.grid(row=2, column=2, padx=5)
 
 #label com as opcoes escolhidas -
 resposta_label = customtkinter.CTkLabel(master=root, text="")
 resposta_label.pack(pady=14, padx=12)
 
 #caixa de texto com resultados
-result_textbox = customtkinter.CTkTextbox(master=root, height=200, width=500, fg_color="transparent", font=('arial', 13))
+result_textbox = customtkinter.CTkTextbox(master=root, height=200, width=600, fg_color="transparent", font=('arial', 13))
 result_textbox.pack(pady=16, padx=14)
 
 #Frame 2 
